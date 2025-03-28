@@ -68,7 +68,7 @@ def account_menu():
 
 
 main_choice = main_menu()
-os.system("clear")
+os.system("cls" if os.name == "nt" else "clear")
 
 # User chocie if statements
 if main_choice == "Save a new password":
@@ -77,8 +77,8 @@ if main_choice == "Save a new password":
     password = quest.password("Please input the pasword:").ask()
 
     # Encrypt account details
-    username_encrypted = f.encrypt(f"{username}".encode())
-    password_encrypted = f.encrypt(f"{password}".encode())
+    username_encrypted = f.encrypt(username.encode())
+    password_encrypted = f.encrypt(password.encode())
 
     cursor.execute(
         "INSERT INTO passwords (account, username, password) VALUES (?, ?, ?)",
@@ -94,7 +94,14 @@ if main_choice == "Save a new password":
 
 elif main_choice == "Retrieve a password":
     account_chocie = account_menu()
-    print(account_chocie)  # TODO: Continue from here.
+    cursor.execute("SELECT * FROM passwords WHERE account = ?", (account_chocie,))
+    account_data = cursor.fetchone()
+    username_decrypted = f.decrypt(account_data[2]).decode("utf-8")
+    password_decrypted = f.decrypt(account_data[3]).decode("utf-8")
+    quest.print(
+        f"Username: {username_decrypted}\nPassword: {password_decrypted}",
+        style="bold fg: pink",
+    )
 elif main_choice == "Delete a password":
     print("3")
 elif main_choice == "List all saved accounts":
