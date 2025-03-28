@@ -61,9 +61,7 @@ def account_menu():
     id_account = cursor.fetchall()
     account_chocies = [row[0] for row in id_account]
     print(id_account)
-    choice = quest.select(
-        "Please choose the account to fetch info from:", choices=account_chocies
-    ).ask()
+    choice = quest.select("Please choose the account:", choices=account_chocies).ask()
     return choice
 
 
@@ -71,6 +69,7 @@ main_choice = main_menu()
 os.system("cls" if os.name == "nt" else "clear")
 
 # User chocie if statements
+
 if main_choice == "Save a new password":
     account = quest.text("Please input the website/application name:").ask()
     username = quest.text("Please input the username:").ask()
@@ -95,16 +94,26 @@ if main_choice == "Save a new password":
 elif main_choice == "Retrieve a password":
     account_chocie = account_menu()
     cursor.execute("SELECT * FROM passwords WHERE account = ?", (account_chocie,))
-    account_data = cursor.fetchone()
-    username_decrypted = f.decrypt(account_data[2]).decode("utf-8")
-    password_decrypted = f.decrypt(account_data[3]).decode("utf-8")
+    account_temp = cursor.fetchone()
+    username_decrypted = f.decrypt(account_temp[2]).decode("utf-8")
+    password_decrypted = f.decrypt(account_temp[3]).decode("utf-8")
     quest.print(
         f"Username: {username_decrypted}\nPassword: {password_decrypted}",
         style="bold fg: pink",
     )
 elif main_choice == "Delete a password":
-    print("3")
+    deletion_choice = account_menu()
+    cursor.execute("DELETE FROM passwords WHERE account = ?", (deletion_choice,))
+    con.commit()
 elif main_choice == "List all saved accounts":
-    print("4")
+    cursor.execute("SELECT * FROM passwords")
+    rows = cursor.fetchall()
+    for row in rows:
+        id = row[0]
+        account = row[1]
+        username = f.decrypt(row[2]).decode("utf-8")
+        password = f.decrypt(row[3]).decode("utf-8")
+        time = row[4]
+        print(f"| {id}. USER: {username} | PASS: {password} | {time}")
 else:
     exit()
